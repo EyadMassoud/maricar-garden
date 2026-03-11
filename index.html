@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Maricar's Garden</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --sky-top:#87CEEB;--sky-mid:#B0E0F6;--sky-bot:#d4f1ff;
+    --grass:#4a9e2f;--grass-dark:#3a8422;
+    --petal:#FFD700;--center:#5C3A1E;--stem:#2d7a15;--leaf:#3da321;
+    --card-bg:rgba(255,255,255,.9);--accent:#e07b28;
+  }
+  html,body{
+    font-family:'Nunito',sans-serif;
+    height:100%;min-height:100vh;min-height:100dvh;
+    overflow-x:hidden;
+    background:linear-gradient(180deg,var(--sky-top) 0%,var(--sky-mid) 40%,var(--sky-bot) 68%,var(--grass) 68%,var(--grass) 100%);
+  }
+
+  /* ===== SUN ===== */
+  .sun{position:fixed;top:18px;right:18px;width:65px;height:65px;background:radial-gradient(circle,#fff7a8 20%,#FFD700 50%,#FFA500 100%);border-radius:50%;box-shadow:0 0 40px 15px rgba(255,215,0,.4),0 0 80px 40px rgba(255,165,0,.15);animation:sunPulse 4s ease-in-out infinite;z-index:1}
+  .sun-ray{position:absolute;top:50%;left:50%;width:90px;height:3px;background:linear-gradient(90deg,rgba(255,215,0,.6),transparent);transform-origin:0 50%;border-radius:2px}
+  @keyframes sunPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+
+  /* ===== CLOUDS ===== */
+  .cloud{position:fixed;background:#fff;border-radius:50px;opacity:.75;z-index:1}
+  .cloud::before,.cloud::after{content:'';position:absolute;background:#fff;border-radius:50%}
+  .cloud-1{width:100px;height:32px;top:45px;animation:drift 36s linear infinite}
+  .cloud-1::before{width:40px;height:40px;top:-22px;left:18px}.cloud-1::after{width:56px;height:44px;top:-18px;left:42px}
+  .cloud-2{width:76px;height:24px;top:85px;animation:drift 50s linear infinite;animation-delay:-20s;opacity:.5}
+  .cloud-2::before{width:32px;height:32px;top:-17px;left:12px}.cloud-2::after{width:44px;height:36px;top:-15px;left:30px}
+  .cloud-3{width:110px;height:36px;top:28px;animation:drift 43s linear infinite;animation-delay:-10s;opacity:.6}
+  .cloud-3::before{width:48px;height:44px;top:-24px;left:22px}.cloud-3::after{width:64px;height:48px;top:-20px;left:50px}
+  @keyframes drift{from{left:-200px}to{left:110vw}}
+
+  /* ===== GRASS ===== */
+  .grass-container{position:fixed;bottom:0;left:0;right:0;height:34vh;z-index:2;pointer-events:none;overflow:hidden}
+  .grass-blade{position:absolute;bottom:0;width:7px;border-radius:80% 80% 0 0;transform-origin:bottom center}
+  @keyframes grassSway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+
+  /* ===== SUNFLOWERS ===== */
+  .sunflower{position:fixed;bottom:0;z-index:3;pointer-events:none;animation:sway 4s ease-in-out infinite}
+  .sf-stem{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:6px;background:linear-gradient(to top,var(--grass-dark),var(--stem));border-radius:4px}
+  .sf-head{position:absolute;top:0;left:50%;transform:translateX(-50%)}
+  .sf-petal{position:absolute;top:50%;left:50%;transform-origin:50% 100%;border-radius:50%;box-shadow:inset 0 -3px 5px rgba(200,150,0,.3)}
+  .sf-center{position:absolute;background:radial-gradient(circle,#8B6914,var(--center));border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1}
+  .sf-center::after{content:'';position:absolute;inset:3px;background:radial-gradient(circle,#a07828,#5C3A1E);border-radius:50%}
+  .sf-leaf{position:absolute;width:28px;height:14px;background:var(--leaf);border-radius:0 80% 0 80%;transform-origin:0 50%}
+  .sf-leaf.right{border-radius:80% 0 80% 0;transform-origin:100% 50%}
+  .sf-1{left:3%;animation-delay:0s}.sf-2{left:13%;animation-delay:-.8s}
+  .sf-3{right:3%;animation-delay:-1.5s}.sf-4{right:13%;animation-delay:-.3s}
+  @keyframes sway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+
+  /* ===== BUTTERFLIES ===== */
+  .butterfly{position:fixed;z-index:15;pointer-events:none;filter:drop-shadow(0 2px 4px rgba(0,0,0,.12));will-change:left,top,transform}
+  .bf-body{position:absolute;width:4px;height:16px;background:linear-gradient(to bottom,#333,#1a1a1a);border-radius:2px;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2}
+  .bf-antenna{position:absolute;width:1.5px;height:9px;background:#333;top:2px;transform-origin:bottom center;border-radius:1px}
+  .bf-antenna.left{left:calc(50% - 4px);transform:rotate(-25deg)}.bf-antenna.right{left:calc(50% + 3px);transform:rotate(25deg)}
+  .bf-antenna::after{content:'';position:absolute;top:-2px;left:-1.5px;width:4px;height:4px;background:#333;border-radius:50%}
+  .bf-wing{position:absolute;top:50%;animation:flapLeft .28s ease-in-out infinite alternate}
+  .bf-wing.top-left{width:20px;height:18px;right:50%;margin-top:-13px;border-radius:50% 20% 50% 50%;transform-origin:100% 50%}
+  .bf-wing.bot-left{width:14px;height:13px;right:50%;margin-top:1px;border-radius:50% 50% 20% 50%;transform-origin:100% 50%}
+  .bf-wing.top-right{width:20px;height:18px;left:50%;margin-top:-13px;border-radius:20% 50% 50% 50%;transform-origin:0 50%;animation-name:flapRight}
+  .bf-wing.bot-right{width:14px;height:13px;left:50%;margin-top:1px;border-radius:50% 50% 50% 20%;transform-origin:0 50%;animation-name:flapRight}
+  .bf-orange .bf-wing{background:radial-gradient(ellipse at 30% 40%,#FFB347,#E86100);border:1.5px solid rgba(0,0,0,.1)}
+  .bf-blue .bf-wing{background:radial-gradient(ellipse at 30% 40%,#7EC8E3,#2E86AB);border:1.5px solid rgba(0,0,0,.08)}
+  .bf-pink .bf-wing{background:radial-gradient(ellipse at 30% 40%,#FFB6C1,#E75480);border:1.5px solid rgba(0,0,0,.08)}
+  .bf-purple .bf-wing{background:radial-gradient(ellipse at 30% 40%,#D8B4FE,#9333EA);border:1.5px solid rgba(0,0,0,.08)}
+  @keyframes flapLeft{from{transform:rotateY(0) scaleX(1)}to{transform:rotateY(65deg) scaleX(.4)}}
+  @keyframes flapRight{from{transform:rotateY(0) scaleX(1)}to{transform:rotateY(-65deg) scaleX(.4)}}
+
+  /* ===== BEES ===== */
+  .bee{position:fixed;z-index:15;pointer-events:none;width:28px;height:20px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.18));will-change:left,top,transform}
+  .bee-body{position:absolute;width:22px;height:14px;background:repeating-linear-gradient(90deg,#FFD700 0px,#FFD700 4px,#1a1a1a 4px,#1a1a1a 8px);border-radius:50%;top:50%;left:50%;transform:translate(-50%,-50%);border:1px solid rgba(0,0,0,.2)}
+  .bee-head{position:absolute;width:9px;height:9px;background:#1a1a1a;border-radius:50%;top:50%;left:-1px;transform:translateY(-50%)}
+  .bee-eye{position:absolute;width:3px;height:3px;background:#fff;border-radius:50%;top:2px}
+  .bee-eye.l{left:1px}.bee-eye.r{left:5px}
+  .bee-wing{position:absolute;background:rgba(200,230,255,.6);border:1px solid rgba(150,200,240,.3);border-radius:50%}
+  .bee-wing.top{width:14px;height:9px;top:-5px;left:50%;transform:translateX(-50%);animation:beeFlap .11s ease-in-out infinite alternate;transform-origin:50% 100%}
+  .bee-wing.bot{width:11px;height:7px;top:-2px;left:50%;transform:translateX(-40%);animation:beeFlap .11s ease-in-out infinite alternate-reverse;transform-origin:50% 100%}
+  .bee-sting{position:absolute;right:-3px;top:50%;transform:translateY(-50%);width:0;height:0;border-top:2.5px solid transparent;border-bottom:2.5px solid transparent;border-left:5px solid #1a1a1a}
+  @keyframes beeFlap{from{transform:translateX(-50%) rotateX(0)}to{transform:translateX(-50%) rotateX(65deg)}}
+
+  /* ===== PETALS ===== */
+  .petal-float{position:fixed;z-index:5;pointer-events:none;opacity:.6}
+  .petal-float svg{width:12px;height:12px}
+  .pf-1{animation:pd1 13s linear infinite}.pf-2{animation:pd2 16s linear infinite;animation-delay:-5s}.pf-3{animation:pd1 19s linear infinite;animation-delay:-9s}
+  @keyframes pd1{0%{top:-20px;left:22%;transform:rotate(0);opacity:.6}100%{top:110vh;left:36%;transform:rotate(360deg);opacity:0}}
+  @keyframes pd2{0%{top:-20px;left:64%;transform:rotate(0);opacity:.5}100%{top:110vh;left:48%;transform:rotate(-300deg);opacity:0}}
+
+  /* ===== LADYBUGS ===== */
+  .ladybug{position:fixed;z-index:6;pointer-events:none;width:14px;height:16px}
+  .lb-body{width:14px;height:12px;background:radial-gradient(circle at 40% 35%,#e53e3e,#c0392b);border-radius:50%;position:relative}
+  .lb-body::after{content:'';position:absolute;width:1.5px;height:100%;background:#1a1a1a;left:50%;transform:translateX(-50%)}
+  .lb-dot{position:absolute;width:2.5px;height:2.5px;background:#1a1a1a;border-radius:50%}
+  .lb-head{width:7px;height:5px;background:#1a1a1a;border-radius:50% 50% 0 0;margin:0 auto}
+  @keyframes ladybugCrawl{0%{transform:translateX(0)}25%{transform:translateX(35px) translateY(-4px)}50%{transform:translateX(18px) translateY(3px)}75%{transform:translateX(50px) translateY(-2px)}100%{transform:translateX(0)}}
+
+  /* ===== CARD (centered) ===== */
+  .scene{
+    display:flex;align-items:center;justify-content:center;
+    width:100%;height:100%;min-height:100vh;min-height:100dvh;
+    padding:16px;position:relative;z-index:8;
+  }
+  .card{
+    background:var(--card-bg);
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+    border-radius:24px;padding:30px 24px;
+    width:100%;max-width:380px;
+    box-shadow:0 12px 40px rgba(0,0,0,.12),0 0 0 1px rgba(255,255,255,.5),inset 0 1px 0 rgba(255,255,255,.6);
+    position:relative;
+    margin:0 auto;
+  }
+  .card-vine{position:absolute;top:-8px;right:18px;font-size:1.7rem;filter:drop-shadow(0 1px 2px rgba(0,0,0,.15));animation:vineSway 3s ease-in-out infinite}
+  @keyframes vineSway{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}}
+
+  h1{font-family:'Caveat',cursive;text-align:center;font-size:2rem;font-weight:700;color:#2d5016;margin-bottom:2px;line-height:1.1}
+  .subtitle{text-align:center;color:#7a9160;font-size:.76rem;margin-bottom:20px;font-weight:600;letter-spacing:.3px}
+
+  .field{margin-bottom:12px}
+  label{display:flex;align-items:center;gap:5px;font-size:.68rem;font-weight:700;color:#5a7a3a;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
+  label .icon{font-size:.85rem}
+
+  /* ===== DATE INPUT — type/pick hybrid ===== */
+  .date-wrap{position:relative;width:100%}
+  .date-text{
+    width:100%;padding:10px 40px 10px 12px;
+    border:2px solid #c5ddb0;border-radius:12px;
+    font-size:16px;font-family:'Nunito',sans-serif;color:#2d5016;
+    background:rgba(255,255,255,.75);outline:none;
+    -webkit-appearance:none;appearance:none;
+    transition:all .25s;
+  }
+  .date-text::placeholder{color:#a0b890;font-size:.85rem}
+  .date-text:focus{border-color:#6aaa3a;background:#fff;box-shadow:0 0 0 3px rgba(106,170,58,.15)}
+  .date-pick{
+    position:absolute;right:0;top:0;bottom:0;width:42px;
+    opacity:0;cursor:pointer;font-size:16px;
+    -webkit-appearance:none;appearance:none;
+  }
+  .cal-icon{
+    position:absolute;right:10px;top:50%;transform:translateY(-50%);
+    font-size:1.1rem;pointer-events:none;opacity:.5;
+  }
+
+  .swap-btn{
+    display:flex;align-items:center;justify-content:center;
+    margin:2px auto 12px;background:rgba(255,255,255,.6);
+    border:2px solid #c5ddb0;border-radius:50%;
+    width:34px;height:34px;font-size:.95rem;
+    cursor:pointer;color:#5a7a3a;transition:all .25s;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .swap-btn:active{background:#5a7a3a;color:#fff;border-color:#5a7a3a}
+
+  .btn{
+    width:100%;padding:12px;border:none;border-radius:14px;
+    background:linear-gradient(135deg,#6aaa3a,var(--accent));
+    color:#fff;font-size:1rem;font-weight:700;font-family:'Nunito',sans-serif;
+    cursor:pointer;transition:all .2s;
+    box-shadow:0 4px 14px rgba(106,170,58,.35);
+    position:relative;overflow:hidden;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,transparent 40%,rgba(255,255,255,.15));pointer-events:none}
+  .btn:active{transform:scale(.97)}
+
+  .result{margin-top:16px;display:none;animation:bloomIn .5s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes bloomIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
+  .result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+  .result-box{text-align:center;background:linear-gradient(145deg,#f0f7e8,#dcedc8);border-radius:14px;padding:12px 4px;border:1px solid rgba(106,170,58,.2)}
+  .result-box .num{font-family:'Caveat',cursive;font-size:2.2rem;font-weight:700;color:#2d7a15;line-height:1}
+  .result-box .unit{font-size:.64rem;color:#7a9160;text-transform:uppercase;letter-spacing:.8px;margin-top:2px;font-weight:700}
+  .total-days{text-align:center;color:#5a7a3a;font-size:.82rem;padding:9px;background:linear-gradient(135deg,#f7faf0,#edf5e1);border-radius:10px;font-weight:600;border:1px solid rgba(106,170,58,.15)}
+  .total-days strong{color:var(--accent);font-size:1.05rem;font-family:'Caveat',cursive;font-weight:700}
+  .error-msg{text-align:center;color:#c0392b;font-size:.75rem;margin-top:6px;display:none}
+
+  @media(max-width:500px){
+    .sun{width:50px;height:50px;top:10px;right:10px}
+    .card{padding:24px 18px;border-radius:20px}
+    h1{font-size:1.65rem}
+    .result-box .num{font-size:1.8rem}
+    .grass-container{height:20vh}
+  }
+</style>
+</head>
+<body>
+
+<div class="sun" id="sun"></div>
+<div class="cloud cloud-1"></div>
+<div class="cloud cloud-2"></div>
+<div class="cloud cloud-3"></div>
+<div class="petal-float pf-1"><svg viewBox="0 0 20 20"><ellipse cx="10" cy="10" rx="6" ry="9" fill="#FFD700" opacity=".8" transform="rotate(15 10 10)"/></svg></div>
+<div class="petal-float pf-2"><svg viewBox="0 0 20 20"><ellipse cx="10" cy="10" rx="5" ry="8" fill="#FFA07A" opacity=".7" transform="rotate(-20 10 10)"/></svg></div>
+<div class="petal-float pf-3"><svg viewBox="0 0 20 20"><ellipse cx="10" cy="10" rx="6" ry="9" fill="#FFB6C1" opacity=".6" transform="rotate(30 10 10)"/></svg></div>
+<div class="grass-container" id="grassContainer"></div>
+<div class="sunflower sf-1" id="sf1"></div>
+<div class="sunflower sf-2" id="sf2"></div>
+<div class="sunflower sf-3" id="sf3"></div>
+<div class="sunflower sf-4" id="sf4"></div>
+
+<div class="scene">
+  <div class="card">
+    <div class="card-vine">&#127803;</div>
+    <h1>Maricar's Garden</h1>
+    <p class="subtitle">count the days between two moments</p>
+
+    <div class="field">
+      <label><span class="icon">&#127793;</span> Start Date</label>
+      <div class="date-wrap">
+        <input type="text" class="date-text" id="startText" placeholder="dd/mm/yyyy or pick &#8594;" autocomplete="off" inputmode="numeric">
+        <input type="date" class="date-pick" id="startPick">
+        <span class="cal-icon">&#128197;</span>
+      </div>
+    </div>
+
+    <button class="swap-btn" onclick="swapDates()" title="Swap dates">&#8645;</button>
+
+    <div class="field">
+      <label><span class="icon">&#127804;</span> End Date</label>
+      <div class="date-wrap">
+        <input type="text" class="date-text" id="endText" placeholder="dd/mm/yyyy or pick &#8594;" autocomplete="off" inputmode="numeric">
+        <input type="date" class="date-pick" id="endPick">
+        <span class="cal-icon">&#128197;</span>
+      </div>
+    </div>
+
+    <button class="btn" onclick="calculate()">&#127803; Calculate &#127803;</button>
+
+    <div class="error-msg" id="errorMsg">Please enter valid dates (dd/mm/yyyy)</div>
+
+    <div class="result" id="result">
+      <div class="result-grid">
+        <div class="result-box">
+          <div class="num" id="rYears">0</div>
+          <div class="unit">Years</div>
+        </div>
+        <div class="result-box">
+          <div class="num" id="rMonths">0</div>
+          <div class="unit">Months</div>
+        </div>
+        <div class="result-box">
+          <div class="num" id="rDays">0</div>
+          <div class="unit">Days</div>
+        </div>
+      </div>
+      <div class="total-days">Total: <strong id="rTotal">0</strong> days</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ===== SUN RAYS ===== */
+!function(){
+  var sun=document.getElementById('sun');
+  for(var i=0;i<12;i++){
+    var ray=document.createElement('div');
+    ray.className='sun-ray';
+    ray.style.transform='rotate('+i*30+'deg)';
+    ray.style.opacity=.3+Math.random()*.3;
+    sun.appendChild(ray);
+  }
+}();
+
+/* ===== GRASS ===== */
+!function(){
+  var c=document.getElementById('grassContainer');
+  var count=window.innerWidth<500?30:65;
+  for(var i=0;i<count;i++){
+    var b=document.createElement('div');
+    b.className='grass-blade';
+    b.style.height=(25+Math.random()*50)+'px';
+    b.style.left=(i/count*100+Math.random()*2)+'%';
+    b.style.animation='grassSway '+(2+Math.random()*3)+'s ease-in-out '+(-Math.random()*3)+'s infinite';
+    var hue=100+Math.random()*30,light=30+Math.random()*15;
+    b.style.background='linear-gradient(to top,hsl('+hue+',60%,'+light+'%),hsl('+hue+',70%,'+(light+15)+'%))';
+    c.appendChild(b);
+  }
+}();
+
+/* ===== SUNFLOWERS ===== */
+function buildSunflower(id,stemH,headSize){
+  var el=document.getElementById(id);
+  if(!el)return;
+  var stem=document.createElement('div');
+  stem.className='sf-stem';stem.style.height=stemH+'px';
+  el.appendChild(stem);
+  el.style.width=headSize+24+'px';el.style.height=stemH+headSize/2+'px';
+  var head=document.createElement('div');
+  head.className='sf-head';head.style.width=headSize+'px';head.style.height=headSize+'px';
+  el.appendChild(head);
+  for(var i=0;i<12;i++){
+    var p=document.createElement('div');p.className='sf-petal';
+    var angle=(360/12)*i-90,pw=headSize*.22,ph=headSize*.4;
+    p.style.width=pw+'px';p.style.height=ph+'px';
+    p.style.transform='translate(-50%,-100%) rotate('+angle+'deg) translateY(-'+headSize*.18+'px)';
+    p.style.background=Math.random()>.5?'#FFD700':'#FFC107';
+    head.appendChild(p);
+  }
+  var center=document.createElement('div');center.className='sf-center';
+  center.style.width=headSize*.4+'px';center.style.height=headSize*.4+'px';
+  head.appendChild(center);
+  for(var j=0;j<2;j++){
+    var leaf=document.createElement('div');var isRight=j%2===1;
+    leaf.className='sf-leaf'+(isRight?' right':'');
+    leaf.style.bottom=(stemH*.25+j*stemH*.3)+'px';
+    if(isRight)leaf.style.right='50%';else leaf.style.left='50%';
+    el.appendChild(leaf);
+  }
+}
+var isMobile=window.innerWidth<500;
+buildSunflower('sf1',isMobile?90:155,isMobile?36:58);
+buildSunflower('sf2',isMobile?70:125,isMobile?30:45);
+buildSunflower('sf3',isMobile?100:170,isMobile?38:62);
+buildSunflower('sf4',isMobile?80:135,isMobile?32:48);
+
+/* ===== TOUCH / MOUSE AVOIDANCE ===== */
+var pointerX=-999,pointerY=-999,pointerActive=false;
+var FLEE_RADIUS=80,FLEE_STRENGTH=3.5;
+function updatePointer(x,y){pointerX=x;pointerY=y;pointerActive=true}
+function clearPointer(){pointerActive=false;pointerX=-999;pointerY=-999}
+document.addEventListener('touchstart',function(e){var t=e.touches[0];updatePointer(t.clientX,t.clientY)},{passive:true});
+document.addEventListener('touchmove',function(e){var t=e.touches[0];updatePointer(t.clientX,t.clientY)},{passive:true});
+document.addEventListener('touchend',clearPointer,{passive:true});
+document.addEventListener('mousemove',function(e){updatePointer(e.clientX,e.clientY)});
+document.addEventListener('mouseleave',clearPointer);
+function applyFlee(c){
+  if(!pointerActive)return;
+  var dx=c.x-pointerX,dy=c.y-pointerY,dist=Math.sqrt(dx*dx+dy*dy);
+  if(dist<FLEE_RADIUS&&dist>0){var f=FLEE_STRENGTH*(1-dist/FLEE_RADIUS);c.vx+=f*(dx/dist);c.vy+=f*(dy/dist)}
+}
+
+/* ===== BUTTERFLIES ===== */
+var bfColors=['bf-orange','bf-blue','bf-pink','bf-purple'];
+var butterflies=[];
+function createButterfly(){
+  var bf=document.createElement('div');
+  bf.className='butterfly '+bfColors[Math.floor(Math.random()*bfColors.length)];
+  bf.style.width='46px';bf.style.height='36px';
+  bf.innerHTML='<div class="bf-antenna left"></div><div class="bf-antenna right"></div><div class="bf-wing top-left"></div><div class="bf-wing bot-left"></div><div class="bf-wing top-right"></div><div class="bf-wing bot-right"></div><div class="bf-body"></div>';
+  var scale=.7+Math.random()*.5;
+  document.body.appendChild(bf);
+  var sx=Math.random()*window.innerWidth,sy=30+Math.random()*(window.innerHeight*.4);
+  bf.style.left=sx+'px';bf.style.top=sy+'px';bf.style.transform='scale('+scale+')';
+  return{el:bf,x:sx,y:sy,vx:(Math.random()-.5)*1.2,vy:(Math.random()-.5)*.6,ax:0,ay:0,turnTimer:Math.random()*200,scale:scale};
+}
+for(var i=0;i<(isMobile?3:5);i++) butterflies.push(createButterfly());
+
+/* ===== BEES ===== */
+var bees=[];
+function createBee(){
+  var bee=document.createElement('div');bee.className='bee';
+  bee.innerHTML='<div class="bee-body"><div class="bee-head"><div class="bee-eye l"></div><div class="bee-eye r"></div></div><div class="bee-sting"></div></div><div class="bee-wing top"></div><div class="bee-wing bot"></div>';
+  document.body.appendChild(bee);
+  var sx=Math.random()*window.innerWidth,sy=50+Math.random()*(window.innerHeight*.35);
+  bee.style.left=sx+'px';bee.style.top=sy+'px';
+  return{el:bee,x:sx,y:sy,vx:(Math.random()-.5)*2,vy:(Math.random()-.5)*1.2,buzzPhase:Math.random()*Math.PI*2,turnTimer:Math.random()*120};
+}
+for(var i=0;i<(isMobile?2:3);i++) bees.push(createBee());
+
+/* ===== LADYBUGS ===== */
+if(!isMobile){
+  !function(){
+    function makeLB(x,y){
+      var lb=document.createElement('div');lb.className='ladybug';
+      lb.style.left=x+'px';lb.style.bottom=y+'px';
+      lb.innerHTML='<div class="lb-head"></div><div class="lb-body"><div class="lb-dot" style="top:3px;left:1px"></div><div class="lb-dot" style="top:3px;right:1px"></div><div class="lb-dot" style="top:7px;left:3px"></div><div class="lb-dot" style="top:7px;right:3px"></div></div>';
+      lb.style.animation='ladybugCrawl '+(14+Math.random()*10)+'s linear infinite';
+      lb.style.animationDelay=-Math.random()*14+'s';
+      document.body.appendChild(lb);
+    }
+    makeLB(window.innerWidth*.25,50);makeLB(window.innerWidth*.7,38);
+  }();
+}
+
+/* ===== ANIMATION LOOP ===== */
+var W=function(){return window.innerWidth},H=function(){return window.innerHeight};
+function animate(){
+  var i,b;
+  for(i=0;i<butterflies.length;i++){
+    b=butterflies[i];applyFlee(b);
+    b.turnTimer--;
+    if(b.turnTimer<=0){b.ax=(Math.random()-.5)*.05;b.ay=(Math.random()-.5)*.03;b.turnTimer=80+Math.random()*200}
+    b.vx+=b.ax;b.vy+=b.ay;
+    if(b.vx>1.5)b.vx=1.5;if(b.vx<-1.5)b.vx=-1.5;
+    if(b.vy>1.2)b.vy=1.2;if(b.vy<-1.2)b.vy=-1.2;
+    b.x+=b.vx;b.y+=b.vy;
+    if(b.x<-40)b.x=W()+40;if(b.x>W()+40)b.x=-40;
+    if(b.y<12)b.vy=Math.abs(b.vy);if(b.y>H()*.52)b.vy=-Math.abs(b.vy);
+    b.el.style.left=b.x+'px';b.el.style.top=b.y+'px';
+    b.el.style.transform='scale('+b.scale+') '+(b.vx<0?'scaleX(-1)':'scaleX(1)');
+  }
+  for(i=0;i<bees.length;i++){
+    b=bees[i];applyFlee(b);
+    b.buzzPhase+=.15;b.turnTimer--;
+    if(b.turnTimer<=0){b.vx+=(Math.random()-.5)*1.8;b.vy+=(Math.random()-.5)*1.2;b.turnTimer=40+Math.random()*120}
+    b.vx*=.98;b.vy*=.98;
+    if(b.vx>2.2)b.vx=2.2;if(b.vx<-2.2)b.vx=-2.2;
+    if(b.vy>1.8)b.vy=1.8;if(b.vy<-1.8)b.vy=-1.8;
+    b.x+=b.vx;b.y+=b.vy+Math.sin(b.buzzPhase)*.4;
+    if(b.x<-30)b.x=W()+30;if(b.x>W()+30)b.x=-30;
+    if(b.y<20)b.vy=Math.abs(b.vy);if(b.y>H()*.48)b.vy=-Math.abs(b.vy);
+    b.el.style.left=b.x+'px';b.el.style.top=b.y+'px';
+    b.el.style.transform=b.vx>0?'scaleX(-1)':'scaleX(1)';
+  }
+  requestAnimationFrame(animate);
+}
+animate();
+
+/* ===== DATE INPUT LOGIC ===== */
+// Sync picker -> text
+document.getElementById('startPick').addEventListener('change',function(){
+  document.getElementById('startText').value=formatFromISO(this.value);
+});
+document.getElementById('endPick').addEventListener('change',function(){
+  document.getElementById('endText').value=formatFromISO(this.value);
+});
+
+// Auto-format text input as user types: dd/mm/yyyy
+function autoSlash(e){
+  var v=e.target.value.replace(/[^\d\/]/g,'');
+  // insert slashes
+  var digits=v.replace(/\//g,'');
+  if(digits.length>=2&&v.indexOf('/')<0) v=digits.slice(0,2)+'/'+digits.slice(2);
+  if(digits.length>=4&&v.split('/').length<3) {
+    var parts=v.split('/');
+    if(parts.length===2&&parts[1].length>2) v=parts[0]+'/'+parts[1].slice(0,2)+'/'+parts[1].slice(2);
+  }
+  if(v.length>10)v=v.slice(0,10);
+  e.target.value=v;
+}
+document.getElementById('startText').addEventListener('input',autoSlash);
+document.getElementById('endText').addEventListener('input',autoSlash);
+
+function formatFromISO(iso){
+  // yyyy-mm-dd -> dd/mm/yyyy
+  if(!iso)return'';
+  var p=iso.split('-');
+  return p[2]+'/'+p[1]+'/'+p[0];
+}
+
+function parseDate(str){
+  // accepts dd/mm/yyyy, d/m/yyyy, dd-mm-yyyy, yyyy-mm-dd
+  if(!str)return null;
+  str=str.trim();
+  var d,m,y;
+  if(str.indexOf('/')>-1){
+    var p=str.split('/');
+    if(p.length!==3)return null;
+    d=parseInt(p[0],10);m=parseInt(p[1],10);y=parseInt(p[2],10);
+  }else if(str.match(/^\d{4}-\d{1,2}-\d{1,2}$/)){
+    var p=str.split('-');
+    y=parseInt(p[0],10);m=parseInt(p[1],10);d=parseInt(p[2],10);
+  }else if(str.indexOf('-')>-1){
+    var p=str.split('-');
+    if(p.length!==3)return null;
+    d=parseInt(p[0],10);m=parseInt(p[1],10);y=parseInt(p[2],10);
+  }else{return null}
+  if(isNaN(d)||isNaN(m)||isNaN(y))return null;
+  if(y<100)y+=2000;
+  if(m<1||m>12||d<1||d>31)return null;
+  var dt=new Date(y,m-1,d);
+  if(dt.getFullYear()!==y||dt.getMonth()!==m-1||dt.getDate()!==d)return null;
+  return dt;
+}
+
+// Set today as default end date
+var today=new Date();
+var todayStr=('0'+today.getDate()).slice(-2)+'/'+('0'+(today.getMonth()+1)).slice(-2)+'/'+today.getFullYear();
+document.getElementById('endText').value=todayStr;
+
+function swapDates(){
+  var s=document.getElementById('startText');
+  var e=document.getElementById('endText');
+  var tmp=s.value;s.value=e.value;e.value=tmp;
+}
+
+function calculate(){
+  var errEl=document.getElementById('errorMsg');
+  errEl.style.display='none';
+
+  var start=parseDate(document.getElementById('startText').value);
+  var end=parseDate(document.getElementById('endText').value);
+
+  if(!start||!end){errEl.style.display='block';return}
+
+  if(start>end){var tmp=start;start=end;end=tmp}
+
+  var years=end.getFullYear()-start.getFullYear();
+  var months=end.getMonth()-start.getMonth();
+  var days=end.getDate()-start.getDate();
+  if(days<0){months--;var pm=new Date(end.getFullYear(),end.getMonth(),0);days+=pm.getDate()}
+  if(months<0){years--;months+=12}
+  var totalDays=Math.round((end-start)/86400000);
+
+  document.getElementById('rYears').textContent=years;
+  document.getElementById('rMonths').textContent=months;
+  document.getElementById('rDays').textContent=days;
+  document.getElementById('rTotal').textContent=totalDays.toLocaleString();
+  document.getElementById('result').style.display='block';
+}
+</script>
+</body>
+</html>
