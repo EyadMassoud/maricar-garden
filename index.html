@@ -303,7 +303,7 @@
 
   /* ===== ROLLING GRASS CAT ===== */
   .grass-cat{
-    position:fixed;z-index:3;pointer-events:none;
+    position:fixed;z-index:4;pointer-events:none;
     bottom:10vh;
     transition:none;
   }
@@ -347,7 +347,7 @@
     30%{transform:rotate(25deg)}
     60%{transform:rotate(-20deg)}
   }
-  .grass-cat.flip .grass-cat-inner{transform:scaleX(-1)}
+  .grass-cat-flip{display:inline-block;transform:scaleX(-1)}
   body.night .grass-cat{filter:brightness(.5) saturate(.6)}
 
   /* ===== CARD (centered) ===== */
@@ -1266,7 +1266,7 @@ function animate(){
         var pawX=catCenterX+(slamDx/slamDist)*40;
         var pawY=catCenterY+(slamDy/slamDist)*25;
         spawnPawSlam(pawX,pawY);
-        pawSlamCooldown=80; /* ~1.3s between slams */
+        pawSlamCooldown=120; /* ~2s between slams */
         /* Butterfly dodges away on slam */
         closestBf.vx+=(closestBf.x-catCenterX>0?4:-4);
         closestBf.vy-=3;
@@ -1552,13 +1552,15 @@ function spawnGrassCat(){
   if(grassCatActive) return;
   grassCatActive=true;
 
-  /* Outer div = position + flip. Inner div = SVG + walk/roll animation */
+  /* 3-div nesting: outer=position, mid=flip, inner=animation+SVG */
   var el=document.createElement('div');
   el.className='grass-cat';
+  var mid=document.createElement('div');
   var inner=document.createElement('div');
   inner.className='grass-cat-inner';
   inner.innerHTML=makeGrassCatSVG(false);
-  el.appendChild(inner);
+  mid.appendChild(inner);
+  el.appendChild(mid);
 
   /* Pick a side to enter from */
   var fromLeft=Math.random()>0.5;
@@ -1566,8 +1568,8 @@ function spawnGrassCat(){
   var targetX=window.innerWidth*0.15+Math.random()*window.innerWidth*0.6;
 
   el.style.left=startX+'px';
-  /* Cat SVG faces right. Flip outer div when cat should face left. */
-  if(!fromLeft) el.classList.add('flip');
+  /* Cat SVG faces right. Flip mid div when cat should face left (entering from right). */
+  if(!fromLeft) mid.className='grass-cat-flip';
   document.body.appendChild(el);
 
   /* Phase 1: Walk in */
@@ -1592,19 +1594,29 @@ function spawnGrassCat(){
     inner.innerHTML=makeGrassCatSVG(true);
     inner.style.animation='catRoll 1.8s ease-in-out infinite';
 
-    /* "meoow.." speech bubble */
+    /* "meoow.." speech bubble — appended to body so it floats above the card */
     var meow=document.createElement('div');
     meow.className='cat-speech visible';
     meow.textContent='meoow..';
-    meow.style.cssText='position:absolute;top:-18px;left:50%;transform:translateX(-50%);z-index:10;font-size:11px;font-style:italic;';
-    el.style.overflow='visible';
-    el.appendChild(meow);
+    meow.style.cssText='position:fixed;z-index:20;font-size:11px;font-style:italic;pointer-events:none;transition:opacity .5s ease;';
+    document.body.appendChild(meow);
+    /* Position above cat — update on each frame */
+    var meowAlive=true;
+    function positionMeow(){
+      if(!meowAlive||!el.parentNode) return;
+      var catRect=el.getBoundingClientRect();
+      meow.style.left=(catRect.left+catRect.width/2-meow.offsetWidth/2)+'px';
+      meow.style.top=(catRect.top-22)+'px';
+      requestAnimationFrame(positionMeow);
+    }
+    requestAnimationFrame(positionMeow);
     setTimeout(function(){
       if(meow.parentNode) meow.style.opacity='0';
-    },2500);
+    },3500);
     setTimeout(function(){
+      meowAlive=false;
       if(meow.parentNode) meow.parentNode.removeChild(meow);
-    },3000);
+    },4000);
 
     setTimeout(function(){stopRolling()},4000+Math.random()*1000);
   }
@@ -1615,11 +1627,11 @@ function spawnGrassCat(){
 
     /* Exit opposite side */
     var exitX=fromLeft?window.innerWidth+10:-90;
-    /* Flip to face exit direction */
+    /* Flip mid div to face exit direction */
     if(exitX>targetX){
-      el.classList.remove('flip'); /* face right */
+      mid.className=''; /* face right — no flip */
     }else{
-      el.classList.add('flip'); /* face left */
+      mid.className='grass-cat-flip'; /* face left */
     }
 
     var walkOutStart=Date.now();
@@ -1640,11 +1652,11 @@ function spawnGrassCat(){
   }
 }
 
-/* First one after 8 seconds, then every 10 seconds */
+/* First one after 10 seconds, then every 25-40 seconds */
 setTimeout(function(){
   spawnGrassCat();
-  setInterval(function(){spawnGrassCat()},10000);
-},8000);
+  setInterval(function(){spawnGrassCat()},25000+Math.random()*15000);
+},10000);
 </script>
 </body>
 </html>
