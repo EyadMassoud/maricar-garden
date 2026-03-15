@@ -628,6 +628,17 @@
 </div>
 
 <script>
+/* ===== HELPERS ===== */
+function removeEl(el){if(el&&el.parentNode)el.parentNode.removeChild(el)}
+var potEl=document.getElementById('pot');
+var cachedPotCenter=null;
+function updatePotCenter(){
+  var rect=potEl.getBoundingClientRect();
+  cachedPotCenter={x:rect.left+rect.width/2, y:rect.top};
+}
+window.addEventListener('resize',updatePotCenter);
+setTimeout(updatePotCenter,0);
+
 /* ===== SUN RAYS ===== */
 !function(){
   var sun=document.getElementById('sun');
@@ -755,8 +766,17 @@ if(!isMobile){
    EASTER EGG 1: NIGHT MODE
    ================================================ */
 var isNight=false;
-var sunTaps=0,sunTapTimer=null;
-var moonTaps=0,moonTapTimer=null;
+function makeMultiTapHandler(threshold,timeoutMs,onTrigger){
+  var taps=0,timer=null;
+  return function(e){
+    e.stopPropagation();
+    if(e.type==='touchstart') e.preventDefault();
+    taps++;
+    clearTimeout(timer);
+    timer=setTimeout(function(){taps=0},timeoutMs);
+    if(taps>=threshold){taps=0;clearTimeout(timer);onTrigger()}
+  };
+}
 var starElements=[];
 var shootingStarInterval=null;
 
@@ -767,7 +787,7 @@ function createShootingStar(){
   ss.style.top=(5+Math.random()*30)+'%';
   ss.style.animation='shoot '+(0.8+Math.random()*0.6)+'s linear forwards';
   document.body.appendChild(ss);
-  setTimeout(function(){if(ss.parentNode)ss.parentNode.removeChild(ss)},2000);
+  setTimeout(function(){removeEl(ss)},2000);
 }
 
 function activateNightMode(){
@@ -801,9 +821,7 @@ function activateNightMode(){
   }
 
   /* Shooting stars every 4-8 seconds */
-  shootingStarInterval=setInterval(function(){
-    if(isNight) createShootingStar();
-  },4000+Math.random()*4000);
+  shootingStarInterval=setInterval(createShootingStar,4000+Math.random()*4000);
   /* First one after 2 seconds */
   setTimeout(function(){if(isNight)createShootingStar()},2000);
 }
@@ -822,7 +840,7 @@ function deactivateNightMode(){
   }
   setTimeout(function(){
     for(var i=0;i<starElements.length;i++){
-      if(starElements[i].parentNode) starElements[i].parentNode.removeChild(starElements[i]);
+      removeEl(starElements[i]);
     }
     starElements=[];
   },2000);
@@ -830,33 +848,11 @@ function deactivateNightMode(){
   if(shootingStarInterval){clearInterval(shootingStarInterval);shootingStarInterval=null}
 }
 
-function handleSunTap(e){
-  e.stopPropagation();
-  if(e.type==='touchstart') e.preventDefault();
-  sunTaps++;
-  clearTimeout(sunTapTimer);
-  sunTapTimer=setTimeout(function(){sunTaps=0},1500);
-  if(sunTaps>=3){
-    sunTaps=0;
-    clearTimeout(sunTapTimer);
-    activateNightMode();
-  }
-}
+var handleSunTap=makeMultiTapHandler(3,1500,activateNightMode);
 document.getElementById('sun').addEventListener('click',handleSunTap);
 document.getElementById('sun').addEventListener('touchstart',handleSunTap,{passive:false});
 
-function handleMoonTap(e){
-  e.stopPropagation();
-  if(e.type==='touchstart') e.preventDefault();
-  moonTaps++;
-  clearTimeout(moonTapTimer);
-  moonTapTimer=setTimeout(function(){moonTaps=0},1500);
-  if(moonTaps>=3){
-    moonTaps=0;
-    clearTimeout(moonTapTimer);
-    deactivateNightMode();
-  }
-}
+var handleMoonTap=makeMultiTapHandler(3,1500,deactivateNightMode);
 document.getElementById('moon').addEventListener('click',handleMoonTap);
 document.getElementById('moon').addEventListener('touchstart',handleMoonTap,{passive:false});
 
@@ -900,7 +896,7 @@ function spawnHearts(x,y,count){
         heart.style.animation='heartFloat '+(1.5+Math.random()*1)+'s ease-out forwards';
         document.body.appendChild(heart);
         setTimeout(function(){
-          if(heart.parentNode) heart.parentNode.removeChild(heart);
+          removeEl(heart);
         },2500);
       },idx*120);
     })(i);
@@ -924,8 +920,8 @@ function handlePotTap(e){
     catSpeech.classList.remove('visible');
     catSign.textContent='Love You Beshi \u2764';
     catSign.classList.add('visible');
-    var potRect=document.getElementById('pot').getBoundingClientRect();
-    spawnHearts(potRect.left+potRect.width/2,potRect.top-20,12);
+    var potPos=getPotTopCenter();
+    spawnHearts(potPos.x,potPos.y-20,12);
     clearTimeout(catResetTimer);
     catResetTimer=setTimeout(function(){resetCat()},6000);
   }else if(potTaps>=8&&catState!=='love'){
@@ -960,9 +956,8 @@ var attractButterfly=false;
 var attractTimer=0;
 
 function getPotTopCenter(){
-  var pot=document.getElementById('pot');
-  var rect=pot.getBoundingClientRect();
-  return{x:rect.left+rect.width/2, y:rect.top};
+  if(!cachedPotCenter) updatePotCenter();
+  return cachedPotCenter;
 }
 
 function makeChaseSVG(){
@@ -1032,9 +1027,9 @@ function spawnPawSlam(x,y){
     dust.style.top=(y+8+Math.random()*8)+'px';
     dust.style.animation='dustPoof .55s ease-out '+(0.12+Math.random()*0.12)+'s forwards';
     document.body.appendChild(dust);
-    setTimeout(function(el){return function(){if(el.parentNode)el.parentNode.removeChild(el)}}(dust),900);
+    setTimeout(function(el){return function(){removeEl(el)}}(dust),900);
   }
-  setTimeout(function(){if(paw.parentNode)paw.parentNode.removeChild(paw)},700);
+  setTimeout(function(){removeEl(paw)},700);
 }
 
 function startCatChase(bf){
@@ -1048,10 +1043,8 @@ function startCatChase(bf){
   bf.vx=(Math.random()-.5)*3;
 
   /* Remove any leftover chase cat from previous run */
-  if(catChaseEl&&catChaseEl.parentNode){
-    catChaseEl.parentNode.removeChild(catChaseEl);
-    catChaseEl=null;
-  }
+  removeEl(catChaseEl);
+  catChaseEl=null;
 
   /* Immediately hide the pot cat — force reflow to ensure no transition */
   catEl.style.transition='none';
@@ -1121,10 +1114,8 @@ function startCatChase(bf){
       }else{
         /* Arrived at pot — remove chase cat, restore pot cat */
         isCatChasing=false;
-        if(catChaseEl&&catChaseEl.parentNode){
-          catChaseEl.parentNode.removeChild(catChaseEl);
-          catChaseEl=null;
-        }
+        removeEl(catChaseEl);
+        catChaseEl=null;
         catEl.style.visibility='visible';
         catEl.style.transition='transform .6s cubic-bezier(.34,1.56,.64,1)';
         resetCat();
@@ -1137,12 +1128,12 @@ function startCatChase(bf){
 /* ================================================
    ANIMATION LOOP
    ================================================ */
-var W=function(){return window.innerWidth},H=function(){return window.innerHeight};
 var animFrame=0;
 
 function animate(){
   animFrame++;
   var i,b;
+  var W=window.innerWidth,H=window.innerHeight;
   var speedMult=isNight?0.5:1;
   var potCenter=getPotTopCenter();
 
@@ -1179,9 +1170,9 @@ function animate(){
     var maxVy=1.2*speedMult;
     if(b.vy>maxVy)b.vy=maxVy;if(b.vy<-maxVy)b.vy=-maxVy;
     b.x+=b.vx*speedMult;b.y+=b.vy*speedMult;
-    if(b.x<-40)b.x=W()+40;if(b.x>W()+40)b.x=-40;
+    if(b.x<-40)b.x=W+40;if(b.x>W+40)b.x=-40;
     if(b.y<12)b.vy=Math.abs(b.vy);
-    var yLimit=(i===0)?H()*.88:H()*.52;
+    var yLimit=(i===0)?H*.88:H*.52;
     if(b.y>yLimit)b.vy=-Math.abs(b.vy);
     b.el.style.left=b.x+'px';b.el.style.top=b.y+'px';
     b.el.style.transform='scale('+b.scale+') '+(b.vx<0?'scaleX(-1)':'scaleX(1)');
@@ -1240,7 +1231,7 @@ function animate(){
 
   /* Chase cat follows butterfly */
   if(isCatChasing&&catChaseEl){
-    var targetX=W()/2,targetY=H()*0.3;
+    var targetX=W/2,targetY=H*0.3;
     var closestDist=99999;
     var closestBf=null;
     for(i=0;i<butterflies.length;i++){
@@ -1284,8 +1275,8 @@ function animate(){
       if(b.vx>2.2)b.vx=2.2;if(b.vx<-2.2)b.vx=-2.2;
       if(b.vy>1.8)b.vy=1.8;if(b.vy<-1.8)b.vy=-1.8;
       b.x+=b.vx;b.y+=b.vy+Math.sin(b.buzzPhase)*.4;
-      if(b.x<-30)b.x=W()+30;if(b.x>W()+30)b.x=-30;
-      if(b.y<20)b.vy=Math.abs(b.vy);if(b.y>H()*.48)b.vy=-Math.abs(b.vy);
+      if(b.x<-30)b.x=W+30;if(b.x>W+30)b.x=-30;
+      if(b.y<20)b.vy=Math.abs(b.vy);if(b.y>H*.48)b.vy=-Math.abs(b.vy);
       b.el.style.left=b.x+'px';b.el.style.top=b.y+'px';
       b.el.style.transform=b.vx>0?'scaleX(-1)':'scaleX(1)';
     }
@@ -1296,11 +1287,21 @@ function animate(){
 animate();
 
 /* ===== DATE INPUT LOGIC ===== */
+var startTextEl=document.getElementById('startText');
+var endTextEl=document.getElementById('endText');
+var errorMsgEl=document.getElementById('errorMsg');
+var resultEl=document.getElementById('result');
+var rYearsEl=document.getElementById('rYears');
+var rMonthsEl=document.getElementById('rMonths');
+var rDaysEl=document.getElementById('rDays');
+var rTotalEl=document.getElementById('rTotal');
+var totalDaysEl=document.getElementById('totalDaysEl');
+
 document.getElementById('startPick').addEventListener('change',function(){
-  document.getElementById('startText').value=formatFromISO(this.value);
+  startTextEl.value=formatFromISO(this.value);
 });
 document.getElementById('endPick').addEventListener('change',function(){
-  document.getElementById('endText').value=formatFromISO(this.value);
+  endTextEl.value=formatFromISO(this.value);
 });
 
 function autoSlash(e){
@@ -1314,8 +1315,8 @@ function autoSlash(e){
   if(v.length>10)v=v.slice(0,10);
   e.target.value=v;
 }
-document.getElementById('startText').addEventListener('input',autoSlash);
-document.getElementById('endText').addEventListener('input',autoSlash);
+startTextEl.addEventListener('input',autoSlash);
+endTextEl.addEventListener('input',autoSlash);
 
 function formatFromISO(iso){
   if(!iso)return'';
@@ -1349,12 +1350,10 @@ function parseDate(str){
 
 var today=new Date();
 var todayStr=('0'+today.getDate()).slice(-2)+'/'+('0'+(today.getMonth()+1)).slice(-2)+'/'+today.getFullYear();
-document.getElementById('endText').value=todayStr;
+endTextEl.value=todayStr;
 
 function swapDates(){
-  var s=document.getElementById('startText');
-  var e=document.getElementById('endText');
-  var tmp=s.value;s.value=e.value;e.value=tmp;
+  var tmp=startTextEl.value;startTextEl.value=endTextEl.value;endTextEl.value=tmp;
 }
 
 /* ================================================
@@ -1379,7 +1378,7 @@ function createSparkles(container){
         sp.style.animation='sparkleUp '+(1+Math.random()*1.5)+'s ease-out forwards';
         container.appendChild(sp);
         setTimeout(function(){
-          if(sp.parentNode) sp.parentNode.removeChild(sp);
+          removeEl(sp);
         },2500);
       },idx*100);
     })(i);
@@ -1387,13 +1386,12 @@ function createSparkles(container){
 }
 
 function calculate(){
-  var errEl=document.getElementById('errorMsg');
-  errEl.style.display='none';
+  errorMsgEl.style.display='none';
 
-  var start=parseDate(document.getElementById('startText').value);
-  var end=parseDate(document.getElementById('endText').value);
+  var start=parseDate(startTextEl.value);
+  var end=parseDate(endTextEl.value);
 
-  if(!start||!end){errEl.style.display='block';return}
+  if(!start||!end){errorMsgEl.style.display='block';return}
 
   if(start>end){var tmp=start;start=end;end=tmp}
 
@@ -1404,21 +1402,19 @@ function calculate(){
   if(months<0){years--;months+=12}
   var totalDays=Math.round((end-start)/86400000);
 
-  document.getElementById('rYears').textContent=years;
-  document.getElementById('rMonths').textContent=months;
-  document.getElementById('rDays').textContent=days;
-  document.getElementById('rTotal').textContent=totalDays.toLocaleString();
+  rYearsEl.textContent=years;
+  rMonthsEl.textContent=months;
+  rDaysEl.textContent=days;
+  rTotalEl.textContent=totalDays.toLocaleString();
 
-  var resultEl=document.getElementById('result');
   resultEl.style.display='block';
 
-  var totalDaysEl=document.getElementById('totalDaysEl');
   resultEl.classList.remove('birthday');
   var oldCake=totalDaysEl.querySelector('.cake-emoji');
-  if(oldCake) totalDaysEl.removeChild(oldCake);
+  if(oldCake) removeEl(oldCake);
   var oldSparkles=resultEl.querySelectorAll('.sparkle');
   for(var s=0;s<oldSparkles.length;s++){
-    if(oldSparkles[s].parentNode) oldSparkles[s].parentNode.removeChild(oldSparkles[s]);
+    removeEl(oldSparkles[s]);
   }
 
   if(checkBirthday(start,end)){
@@ -1602,10 +1598,11 @@ function spawnGrassCat(){
     document.body.appendChild(meow);
     /* Position above cat — update on each frame */
     var meowAlive=true;
+    var meowHalfW=meow.offsetWidth/2;
     function positionMeow(){
       if(!meowAlive||!el.parentNode) return;
       var catRect=el.getBoundingClientRect();
-      meow.style.left=(catRect.left+catRect.width/2-meow.offsetWidth/2)+'px';
+      meow.style.left=(catRect.left+catRect.width/2-meowHalfW)+'px';
       meow.style.top=(catRect.top-22)+'px';
       requestAnimationFrame(positionMeow);
     }
@@ -1615,7 +1612,7 @@ function spawnGrassCat(){
     },3500);
     setTimeout(function(){
       meowAlive=false;
-      if(meow.parentNode) meow.parentNode.removeChild(meow);
+      removeEl(meow);
     },4000);
 
     setTimeout(function(){stopRolling()},4000+Math.random()*1000);
@@ -1644,7 +1641,7 @@ function spawnGrassCat(){
       if(t<1){
         requestAnimationFrame(walkOut);
       }else{
-        if(el.parentNode) el.parentNode.removeChild(el);
+        removeEl(el);
         grassCatActive=false;
       }
     }
